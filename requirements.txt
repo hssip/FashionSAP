@@ -6,3 +6,4 @@ transformers==4.8.1
 opencv-python==4.6.0.66
 torch==1.8.0
 ujson==5.3.0
+timm==0.4.9

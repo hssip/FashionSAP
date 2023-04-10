@@ -1,0 +1,13 @@
+bert_config: './fashion_annotation/bert_config.json'
+tokenizer_config: './fashion_annotation'
+
+image_res: 256
+batch_size_train: 64
+batch_size_test: 128
+
+
+vision_width: 768
+embed_dim: 256
+warm_up: True
+optimizer: {opt: adamW, lr: 2e-5, weight_decay: 0.02}
+schedular: {sched: cosine, lr: 2e-5, epochs: 30, min_lr: 1e-6, decay_rate: 1, warmup_lr: 1e-5, warmup_epochs: 1, cooldown_epochs: 0}
