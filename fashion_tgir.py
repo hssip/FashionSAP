@@ -35,10 +35,6 @@ def train(model, data_loader, optimizer, tokenizer, epoch, warmup_steps, device,
     metric_logger = utils.MetricLogger(delimiter="  ")
     metric_logger.add_meter('lr', utils.SmoothedValue(window_size=1, fmt='{value:.6f}'))
     metric_logger.add_meter('ita', utils.SmoothedValue(window_size=1, fmt='{value:.4f}'))
-    # metric_logger.add_meter('itm', utils.SmoothedValue(window_size=1, fmt='{value:.4f}'))
-    # metric_logger.add_meter('sis', utils.SmoothedValue(window_size=1, fmt='{value:.4f}'))
-    # metric_logger.add_meter('ml', utils.SmoothedValue(window_size=1, fmt='{value:.4f}'))
-    # metric_logger.add_meter('rl', utils.SmoothedValue(window_size=1, fmt='{value:.4f}'))
     
     header = 'Train Epoch: [{}]'.format(epoch)
     print_freq = 50
@@ -49,8 +45,6 @@ def train(model, data_loader, optimizer, tokenizer, epoch, warmup_steps, device,
     for i, batch in enumerate(metric_logger.log_every(data_loader, print_freq, header)):
         batch = [i.to(device, non_blocking=True) for i in batch]
         (text_input_ids, text_attention_mask, reference_img, target_img, ref_id, tar_id, cap_index) = batch
-        # idx = idx.to(device,non_blocking=True)   
-        # text_input = tokenizer(text, padding='longest', max_length=30, return_tensors="pt").to(device)  
             
         if epoch>0 or not config['warm_up']:
             alpha = config['alpha']
@@ -66,11 +60,7 @@ def train(model, data_loader, optimizer, tokenizer, epoch, warmup_steps, device,
         loss.backward()
         optimizer.step()    
         
-        # metric_logger.update(itm=loss_itm.item())
         metric_logger.update(ita=loss.item())
-        # metric_logger.update(sis=symbol_simloss.item())
-        # metric_logger.update(ml=mask_loss.item())
-        # metric_logger.update(rl=replace_loss.item())
         metric_logger.update(lr=optimizer.param_groups[0]["lr"])
         if epoch==0 and i%step_size==0 and i<=warmup_iterations: 
             scheduler.step(i//step_size)         
@@ -120,9 +110,6 @@ def evaluation(model, data_loader, tokenizer, device, config, args):
         fusion_feat = F.normalize(model.combine_text_proj(model.text_proj(fusion_output.last_hidden_state[:,0,:])), dim=-1)
         ref_img_feat = F.normalize(model.combine_vision_proj(model.vision_proj(ref_img_output[:,0,:])),dim=-1)
         tar_img_feat = F.normalize(model.combine_vision_proj(model.vision_proj(tar_img_output[:,0,:])),dim=-1)
-        # fusion_feat = F.normalize(model.fusion_proj(fusion_output.last_hidden_state[:,0,:]), dim=-1)
-        # ref_img_feat = F.normalize(model.vision_proj(ref_img_output[:,0,:]),dim=-1)
-        # tar_img_feat = F.normalize(model.vision_proj(tar_img_output[:,0,:]),dim=-1)
         
         fusion_feats.append(fusion_feat)
         img_feats[ref_pos] = ref_img_feat
@@ -132,7 +119,6 @@ def evaluation(model, data_loader, tokenizer, device, config, args):
     img_feats = img_feats
     
     sim_f2i = fusion_feats @ img_feats.t()
-    # sim_i2f = img_feats @ fusion_feats.t()
     sim_i2f = None
     
     

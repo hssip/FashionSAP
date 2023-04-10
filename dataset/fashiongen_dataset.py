@@ -36,8 +36,6 @@ class fashiongen_dataset_pretrain(Dataset):
         #h5py data of raw data
 
         self.product_list, self.product_indexmap = self.__load_product_info()
-        # if self.sub_dataset:
-            # self.product_list = self.product_list[:500] 
         #list of int, the int is productid
         #dict of product index, key is productid, value is a list of product-info index
 
@@ -53,8 +51,6 @@ class fashiongen_dataset_pretrain(Dataset):
         infodata = json.load(open(datafilename, mode='r', encoding='utf-8'))
         raw_datafilename = os.path.join(self.data_root, 'fashiongen_256_256_{}.h5'.format(self.split))
         raw_data = h5py.File(raw_datafilename)
-        # print(len(infodata))
-        # print(len(raw_data['index_2']))
         assert len(infodata) == len(raw_data['index_2'])
         return infodata, raw_data
 

@@ -406,5 +406,4 @@ if __name__ == '__main__':
     args = parser.parse_args()
     config = yaml.load(open(args.config, 'r'), Loader=yaml.Loader)
     Path(args.output_dir).mkdir(parents=True, exist_ok=True)
-    # yaml.dump(config, open(os.path.join(args.output_dir, 'config.yaml'), 'w'))
     main(args, config)
