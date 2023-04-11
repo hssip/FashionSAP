@@ -23,8 +23,6 @@ class fashiongen_dataset_tgir_train(Dataset):
             self.data_list = self.data_list[:200]
         self.tokenizer = tokenizer
         self.img_ids = self.__get_img_ids()
-        # if self.split != 'train':
-            # self.texts =
 
 
     def __load_datafile(self):
@@ -70,12 +68,11 @@ class fashiongen_dataset_tgir_train(Dataset):
         input_ids = self.tokenizer.convert_tokens_to_ids(description_tokens)
         attention_mask = [1]* len(input_ids) + [0] * pad_length
         input_ids = input_ids + [0] * pad_length
-        # attention_mask[1] = 0
-
+        
         ####change list to tensor
         input_ids = torch.tensor(input_ids, dtype=torch.long)
         attention_mask = torch.tensor(attention_mask, dtype=torch.long)
-        # outpos = torch.tensor(outpos, dtype=torch.long)
+        
         return input_ids, attention_mask
         
     def __len__(self):
@@ -175,10 +172,6 @@ class fashiongen_dataset_tgir_val(Dataset):
     
     def __getitem__(self, index):
 
-        # input_ids, attention_mask = self.__get_text(index)
-        # reference_img, target_img = self.__get_image(index)
-        # img = self.__get_single_image(index)
-        # return img
         input_ids, attention_mask = self.__get_text(index)
         reference_img, target_img = self.__get_pair_images(index)
         label = torch.tensor(self.labels[index], dtype=torch.long)
@@ -191,14 +184,9 @@ class fashiongen_dataset_tgir_val(Dataset):
 class fashiongen_dataset_tgir_originval(Dataset):
     def __init__(self, args, transform, tokenizer, split):   
         self.data_root = args.data_root
-        self.sub_dataset = args.sub_dataset
-        # self.split = 'val' if split in ('val', 'test') else split
-        # self.val_class = args.val_class
         self.max_words = args.max_word_num
         self.transform = transform
         self.data_list = self.__load_datafile()
-        if self.sub_dataset:
-            self.data_list = self.data_list[:200]
         self.texts, self.imgs, self.labels = self.__get_imgs_texts()
         self.tokenizer = tokenizer
 
@@ -256,7 +244,6 @@ class fashiongen_dataset_tgir_originval(Dataset):
         input_ids = self.tokenizer.convert_tokens_to_ids(description_tokens)
         attention_mask = [1]* len(input_ids) + [0] * pad_length
         input_ids = input_ids + [0] * pad_length
-        # attention_mask[1] = 0
 
         ####change list to tensor
         input_ids = torch.tensor(input_ids, dtype=torch.long)
@@ -269,10 +256,6 @@ class fashiongen_dataset_tgir_originval(Dataset):
     
     def __getitem__(self, index):
 
-        # input_ids, attention_mask = self.__get_text(index)
-        # reference_img, target_img = self.__get_image(index)
-        # img = self.__get_single_image(index)
-        # return img
         input_ids, attention_mask = self.__get_text(index)
         reference_img, target_img = self.__get_pair_images(index)
         label = torch.tensor(self.labels[index], dtype=torch.long)

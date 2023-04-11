@@ -63,7 +63,6 @@ class fashiongen_dataset_pretrain(Dataset):
         item_info = self.info_data[index]
         ###### process description
         description = item_info['input_description']
-        
         description_tokens, des_mask_token, des_mask_sign, des_replace_token, des_replace_sign = \
             process_description(description, tagger=None, tokenizer=self.tokenizer)
         
@@ -229,7 +228,6 @@ class fashiongen_dataset_retrieval(Dataset):
         elif self.split == 'validation':
             cap_index = index
         
-        # cap_index = index
         input_ids, attention_mask = self.__get_text(cap_index)
         img = self.__get_image(cap_index)
         return img, input_ids, attention_mask, cap_index
@@ -253,7 +251,6 @@ class fashiongen_dataset_retrieval(Dataset):
         for k,v in text2img.items():
             for vv in v:
                 img2text[vv] = k
-        # km = max(list(img2text.keys()))
         assert text_num == len(text2img)
         assert img_num == len(img2text)
         return img2text, text2img
