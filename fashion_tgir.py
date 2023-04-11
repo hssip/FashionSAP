@@ -40,8 +40,7 @@ def train(model, data_loader, optimizer, tokenizer, epoch, warmup_steps, device,
     print_freq = 50
     step_size = 100
     warmup_iterations = warmup_steps*step_size  
-    
-    # for i,(image, text_input_ids, text_attention_mask, text_token_types, idx) in enumerate(metric_logger.log_every(data_loader, print_freq, header)):
+
     for i, batch in enumerate(metric_logger.log_every(data_loader, print_freq, header)):
         batch = [i.to(device, non_blocking=True) for i in batch]
         (text_input_ids, text_attention_mask, reference_img, target_img, ref_id, tar_id, cap_index) = batch
@@ -50,11 +49,9 @@ def train(model, data_loader, optimizer, tokenizer, epoch, warmup_steps, device,
             alpha = config['alpha']
         else:
             alpha = config['alpha']*min(1,i/len(data_loader))
-
-        # ref_image, tar_image, text_input_ids, text_attention_mask, alpha                 
+               
         loss_ita= model(text_input_ids, text_attention_mask, reference_img, target_img, alpha=alpha, ref_id=ref_id, tar_id=tar_id, cap_index=cap_index)                  
         loss = loss_ita
-        # loss = loss_itm + symbol_simloss + mask_loss + replace_loss
         
         optimizer.zero_grad()
         loss.backward()
@@ -84,7 +81,6 @@ def evaluation(model, data_loader, tokenizer, device, config, args):
     start_time = time.time()  
 
     fusion_feats = []
-    text_len = len(data_loader.dataset.texts)
     img_len = len(data_loader.dataset.imgs)
     img_feats = torch.full((img_len, config['embed_dim']), -100.0).to(device)
     for i, batch in enumerate(metric_logger.log_every(data_loader, 50, header)):
@@ -104,7 +100,6 @@ def evaluation(model, data_loader, tokenizer, device, config, args):
                 return_dict = True,
                 mode = 'fusion'
         )
-        # print(label.size())
         ref_pos = torch.flatten(label[:,1])
         tar_pos = torch.flatten(label[:,2])
         fusion_feat = F.normalize(model.combine_text_proj(model.text_proj(fusion_output.last_hidden_state[:,0,:])), dim=-1)
@@ -119,32 +114,21 @@ def evaluation(model, data_loader, tokenizer, device, config, args):
     img_feats = img_feats
     
     sim_f2i = fusion_feats @ img_feats.t()
-    sim_i2f = None
     
-    
- 
-
-
-        
     total_time = time.time() - start_time
     total_time_str = str(datetime.timedelta(seconds=int(total_time)))
     print('Evaluation time {}'.format(total_time_str))
 
-    # match_i2t = match_i2t.cpu().numpy() if match_i2t is not None else None
-    # match_t2i = match_t2i.cpu().numpy() if match_t2i is not None else None
-    sim_i2f = sim_i2f.cpu().numpy() if sim_i2f is not None else None
     sim_f2i = sim_f2i.cpu().numpy() if sim_f2i is not None else None
 
 
-    # return sim_t2i.T.cpu().numpy(), sim_t2i.cpu().numpy(), match_i2t, match_t2i
-    return sim_f2i, sim_i2f
+
+    return sim_f2i
 
 
             
 @torch.no_grad()
-def itm_eval(sim_f2i, sim_i2f, labels):
-    # print(len(labels))
-    # print(sim_f2i.shape)
+def itm_eval(sim_f2i, labels):
     assert len(labels) == sim_f2i.shape[0]
     labels = [i[2] for i in labels]
     ranks = np.zeros(sim_f2i.shape[0])
@@ -156,21 +140,14 @@ def itm_eval(sim_f2i, sim_i2f, labels):
     ir5 = 100.0 * len(np.where(ranks < 5)[0]) / len(ranks)
     ir10 = 100.0 * len(np.where(ranks < 10)[0]) / len(ranks)
     ir50 = 100.0 * len(np.where(ranks < 50)[0]) / len(ranks)
-    
-    
-    if sim_i2f is not None:
-        pass
 
-    # tr_mean = (tr1 + tr5 + tr10) / 3
     ir_mean = (ir1 + ir5 + ir10) / 3
-    # r_mean = (tr_mean + ir_mean) / 2
-    # r_mean = (tr1 + ir1) / 2
 
     eval_result =  {'ir1': ir1,
                     'ir5': ir5,
                     'ir10': ir10,
                     'ir50': ir50,
-                    'img_r_mean': ir_mean,}
+                    'img_r_mean': ir_mean}
     return eval_result
 
 
@@ -205,10 +182,7 @@ def main(args, config):
     ]
     tokenizer.add_tokens(inner_slots, special_tokens=True)
     #### tokenizer done ####
-    train_dataset, dress_test_dataset, toptee_test_dataset, shirt_test_dataset, all_test_dataset, origin_test_dataset = create_dataset('tgir', config, args,tokenizer)  
-    # a = test_dataset.get_test_labels()
-    # tiny_i2t_img, tiny_i2t_txt = test_dataset.get_i2t_test()
-    # tiny_t2i_txt, tiny_t2i_img = test_dataset.get_i2t_test()
+    train_dataset, dress_test_dataset, toptee_test_dataset, shirt_test_dataset, all_test_dataset = create_dataset('tgir', config, args,tokenizer)
 
     if args.distributed:
         num_tasks = utils.get_world_size()
@@ -262,43 +236,8 @@ def main(args, config):
     elif args.checkpoint:
         checkpoint = torch.load(args.checkpoint, map_location='cpu')
         state_dict = checkpoint['model']
-        new_leng = config['queue_size']
-        pre_leng = state_dict['image_queue'].size()[1]
-        if new_leng < pre_leng:
-            state_dict['image_queue'] = state_dict['image_queue'][:,:new_leng]
-            state_dict['fusion_queue'] = state_dict['fusion_queue'][:,:new_leng] 
-        elif new_leng > pre_leng:
-            state_dict['image_queue'] = torch.cat([state_dict['image_queue'],state_dict['image_queue'][:,:new_leng-pre_leng]], dim=1)
-            state_dict['fusion_queue'] = torch.cat([state_dict['fusion_queue'],state_dict['fusion_queue'][:,:new_leng-pre_leng]], dim=1)   
-        state_dict.pop('queue_ptr')
-        # state_dict.pop('idx_queue')
-        # state_dict['fusion_queue'] = state_dict.pop('text_queue')
-        # if config['queue_size'] < 65536:
-        #     state_dict['image_queue'] = state_dict['image_queue'][:,:config['queue_size']]
-        #     state_dict['fusion_queue'] = state_dict['fusion_queue'][:,:config['queue_size']]
-        # state_dict.pop('queue_ptr')
-        # pop_pars = ['combine_text_proj','combine_vision_proj']
-        # pop_keys = []
-        # for key in state_dict.keys():
-        #     for pk in pop_pars:
-        #         if pk in key:
-        #             pop_keys.append(key)
-        # for pk in pop_keys:
-        #     state_dict.pop(pk)
-
-        msg = model.load_state_dict(state_dict,strict=False)  
-        # model.copy_params()
-        print('load checkpoint from %s'%args.checkpoint)
-        print(msg)
-    elif args.newcheckpoint:
-        checkpoint = torch.load(args.newcheckpoint, map_location='cpu')
-        # 'optimizer': optimizer.state_dict(),
-                        # 'lr_scheduler': lr_scheduler.state_dict(),
-        state_dict = checkpoint['model']
-
         msg = model.load_state_dict(state_dict,strict=True)  
-        # model.copy_params()
-        print('load checkpoint from %s'%args.newcheckpoint)
+        print('load checkpoint from %s'%args.checkpoint)
         print(msg)
 
         
@@ -314,7 +253,6 @@ def main(args, config):
     optimizer = create_optimizer(arg_opt, model)
     arg_sche = utils.AttrDict(config['schedular'])
     lr_scheduler, _ = create_scheduler(arg_sche, optimizer)
-    # lr_scheduler.load_state_dict()
     
     max_epoch = config['schedular']['epochs']
     warmup_steps = config['schedular']['warmup_epochs']
@@ -331,26 +269,21 @@ def main(args, config):
                 train_loader.sampler.set_epoch(epoch)
             train_stats = train(model, train_loader, optimizer, tokenizer, epoch, warmup_steps, device, lr_scheduler, config)  
             
-        # score_f2i, score_i2f= evaluation(model_without_ddp, test_loader, tokenizer, device, config, args)
-        dress_score_f2i, score_i2f= evaluation(model_without_ddp, dress_loader, tokenizer, device, config, args)
-        toptee_score_f2i, score_i2f= evaluation(model_without_ddp, toptee_loader, tokenizer, device, config, args)
-        shirt_score_f2i, score_i2f= evaluation(model_without_ddp, shirt_loader, tokenizer, device, config, args)
-        alltest_score_f2i, score_i2f= evaluation(model_without_ddp, all_test_loader, tokenizer, device, config, args)
-        # score_test_i2t, score_test_t2i = evaluation(model_without_ddp, test_loader, tokenizer, device, config)
+        dress_score_f2i= evaluation(model_without_ddp, dress_loader, tokenizer, device, config, args)
+        toptee_score_f2i= evaluation(model_without_ddp, toptee_loader, tokenizer, device, config, args)
+        shirt_score_f2i= evaluation(model_without_ddp, shirt_loader, tokenizer, device, config, args)
+        alltest_score_f2i= evaluation(model_without_ddp, all_test_loader, tokenizer, device, config, args)
     
         if utils.is_main_process():  
-            # labels = test_dataset.get_labels()
             dress_labels = dress_test_dataset.get_labels()
             toptee_labels = toptee_test_dataset.get_labels()
             shirt_labels = shirt_test_dataset.get_labels()
             all_labels = all_test_dataset.get_labels()
-            # img2text, text2img = test_dataset.get_test_labels()
-            # tiny_i2t_img, tiny_i2t_txt = test_dataset.get_i2t_test()
-            # tiny_t2i_txt, tiny_t2i_img = test_dataset.get_t2i_test()
-            dress_val_result = itm_eval(dress_score_f2i, score_i2f, dress_labels)  
-            toptee_val_result = itm_eval(toptee_score_f2i, score_i2f, toptee_labels)  
-            shirt_val_result = itm_eval(shirt_score_f2i, score_i2f, shirt_labels)  
-            all_test_val_result = itm_eval(alltest_score_f2i, score_i2f, all_labels)  
+            
+            dress_val_result = itm_eval(dress_score_f2i, dress_labels)  
+            toptee_val_result = itm_eval(toptee_score_f2i, toptee_labels)  
+            shirt_val_result = itm_eval(shirt_score_f2i, shirt_labels)  
+            all_test_val_result = itm_eval(alltest_score_f2i, all_labels)  
             print('******* dress val result ********')
             print(dress_val_result)
             print('******* toptee val result ********')
@@ -359,8 +292,6 @@ def main(args, config):
             print(shirt_val_result)
             print('******* all val result ********')
             print(all_test_val_result)
-            # test_result = itm_eval(score_test_i2t, score_test_t2i, test_loader.dataset.txt2img, test_loader.dataset.img2txt)    
-            # print(test_result)
             
             if args.evaluate:                
                 log_stats = {**{f'dress_val_{k}': v for k, v in dress_val_result.items()},
@@ -376,8 +307,7 @@ def main(args, config):
                              **{f'dress_val_{k}': v for k, v in dress_val_result.items()},
                              **{f'toptee_val_{k}': v for k, v in toptee_val_result.items()},
                              **{f'shirt_val_{k}': v for k, v in shirt_val_result.items()},
-                             **{f'all_val_{k}': v for k, v in shirt_val_result.items()},
-                            #  **{f'test_{k}': v for k, v in test_result.items()},                  
+                             **{f'all_val_{k}': v for k, v in shirt_val_result.items()},                 
                              'epoch': epoch,
                             }
                 with open(os.path.join(args.output_dir, "log.txt"),"a") as f:
@@ -391,8 +321,7 @@ def main(args, config):
                         'config': config,
                         'epoch': epoch,
                     }
-                    # outpath = os.path.join(args.output_dir,'epcoh'+str(epoch))
-                    outpath = args.output_dir
+                    outpath = os.path.join(args.output_dir,'epcoh'+str(epoch))
                     if not os.path.exists(outpath):
                         os.makedirs(outpath)
                     torch.save(save_obj, os.path.join(outpath, 'checkpoint_best.pth'))  
@@ -418,40 +347,22 @@ def main(args, config):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()     
     parser.add_argument('--config', default='./configs/fashion_tgir.yaml')
-    parser.add_argument('--output_dir', default='/mnt/MDisk/hyp/out_albef/fashion_tgir/nosis')
-    # parser.add_argument('--pre_point', default='/mnt/MDisk/hyp/predata/albef/ALBEF.pth')
+    parser.add_argument('--output_dir', default='./output')
     parser.add_argument('--pre_point', default='')   
-    # parser.add_argument('--checkpoint', default='')   
-    # parser.add_argument('--checkpoint', default='/data/hyp/myfashion/pretrain_new/checkpoint_best.pth')   
-    # parser.add_argument('--checkpoint', default='/mnt/MDisk/hyp/out_albef/fashiongen_retrieval/only_bef_raw/checkpoint_best.pth')   
-    # parser.add_argument('--checkpoint', default='/mnt/MDisk/hyp/out_albef/fashiongen_pretrain_ablation/epcoh27/checkpoint_best.pth')   
-    parser.add_argument('--checkpoint', default='/mnt/MDisk/hyp/out_albef/fashiongen_pretrain_ablation/nosis/epcoh26/checkpoint_best.pth')   
+    parser.add_argument('--checkpoint', default='')   
     parser.add_argument('--evaluate', action='store_true')
     parser.add_argument('--evaluate_match', action='store_true')
     parser.add_argument('--device', default='cuda')
-    # parser.add_argument('--device', default='cpu')
     parser.add_argument('--seed', default=66, type=int)
     parser.add_argument('--world_size', default=1, type=int, help='number of distributed processes')    
     parser.add_argument('--dist_url', default='env://', help='url used to set up distributed training')
     parser.add_argument('--distributed', default=True, type=bool)
-    parser.add_argument('--sub_dataset', default=False, type=bool)
 
     parser.add_argument('--max_word_num', default=79, type=int)
     parser.add_argument('--data_root', default='/mnt/MDisk/hyp/data/fashioniq', type=str)
     parser.add_argument('--train_class', default='all', type=str)
 
-    
-    
-
-
     args = parser.parse_args()
-
     config = yaml.load(open(args.config, 'r'), Loader=yaml.Loader)
-
     Path(args.output_dir).mkdir(parents=True, exist_ok=True)
-        
-    yaml.dump(config, open(os.path.join(args.output_dir, 'config.yaml'), 'w'))
-    # if arg.evaluate:
-    #     args.output_dir = 
-    
     main(args, config)

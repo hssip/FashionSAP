@@ -47,8 +47,7 @@ def create_dataset(dataset, config, args, tokenizer):
         toptee_test_dataset = fashiongen_dataset_tgir_val(args, transform=test_transform, tokenizer=tokenizer, split='val', val_class='toptee')
         shirt_test_dataset = fashiongen_dataset_tgir_val(args, transform=test_transform, tokenizer=tokenizer, split='val', val_class='shirt')
         all_test_dataset = fashiongen_dataset_tgir_val(args, transform=test_transform, tokenizer=tokenizer, split='val', val_class='all')
-        origin_test_dataset = fashiongen_dataset_tgir_val(args, transform=test_transform, tokenizer=tokenizer, split='val', val_class='all')
-        return train_dataset, dress_test_dataset, toptee_test_dataset, shirt_test_dataset, all_test_dataset, origin_test_dataset
+        return train_dataset, dress_test_dataset, toptee_test_dataset, shirt_test_dataset, all_test_dataset
 
 
 

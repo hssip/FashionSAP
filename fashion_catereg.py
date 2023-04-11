@@ -288,7 +288,6 @@ if __name__ == '__main__':
     parser.add_argument('--world_size', default=1, type=int, help='number of distributed processes')    
     parser.add_argument('--dist_url', default='env://', help='url used to set up distributed training')
     parser.add_argument('--distributed', default=True, type=bool)
-    parser.add_argument('--sub_dataset', default=False, type=bool)
 
     parser.add_argument('--max_word_num', default=75, type=int)
     parser.add_argument('--data_root', default='', type=str)

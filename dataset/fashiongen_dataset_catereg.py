@@ -38,7 +38,7 @@ SUBCATE_LIST = [
 class fashiongen_dataset_catereg(Dataset):
     def __init__(self, args, transform, tokenizer, split):   
         self.data_root = args.data_root
-        self.sub_dataset = args.sub_dataset
+        # self.sub_dataset = args.sub_dataset
         self.split = 'validation' if split in ('val', 'test') else split
         self.max_words = args.max_word_num
         self.prompt = args.prompt
@@ -51,8 +51,8 @@ class fashiongen_dataset_catereg(Dataset):
 
         #list of dict the dict is text info of instance
         #h5py data of raw data
-        if self.sub_dataset:
-            self.info_data = self.info_data[:500] 
+        # if self.sub_dataset:
+        #     self.info_data = self.info_data[:500] 
         self.tokenizer = tokenizer
         self.label_map = {k:i for i,k in enumerate(self.cate_list)}
 

@@ -93,7 +93,6 @@ def evaluation(model, data_loader, tokenizer, device, config, args):
                                         return_dict = True, mode = 'text')
         text_embed = text_embed.last_hidden_state
         text_feat = model.combine_text_proj(model.text_proj(text_embed[:,0,:]))
-        # text_feat = model.text_proj(text_embed[:,0,:])
         text_feats.append(text_feat)
         if args.evaluate and args.evaluate_match:
             text_embeds.append(text_embed)
@@ -149,8 +148,8 @@ def itm_eval(scores_i2t, scores_t2i, img2txt=None, txt2img=None, tiny_i2t=None, 
     tr10_tiny = 0
     if tiny_i2t is not None:
         img_indexes, txt_indexes = tiny_i2t
-        print(img_indexes.shape)
-        print(txt_indexes.shape)
+        # print(img_indexes.shape)
+        # print(txt_indexes.shape)
         tiny_score_i2t = np.zeros(txt_indexes.shape)
         tiny_score = scores_i2t[img_indexes]
         for i, t_socre in enumerate(tiny_score):
