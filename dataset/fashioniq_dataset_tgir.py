@@ -159,12 +159,12 @@ class fashiongen_dataset_tgir_val(Dataset):
         input_ids = self.tokenizer.convert_tokens_to_ids(description_tokens)
         attention_mask = [1]* len(input_ids) + [0] * pad_length
         input_ids = input_ids + [0] * pad_length
-        # attention_mask[1] = 0
+
 
         ####change list to tensor
         input_ids = torch.tensor(input_ids, dtype=torch.long)
         attention_mask = torch.tensor(attention_mask, dtype=torch.long)
-        # outpos = torch.tensor(outpos, dtype=torch.long)
+
         return input_ids, attention_mask
         
     def __len__(self):
@@ -248,7 +248,7 @@ class fashiongen_dataset_tgir_originval(Dataset):
         ####change list to tensor
         input_ids = torch.tensor(input_ids, dtype=torch.long)
         attention_mask = torch.tensor(attention_mask, dtype=torch.long)
-        # outpos = torch.tensor(outpos, dtype=torch.long)
+
         return input_ids, attention_mask
         
     def __len__(self):

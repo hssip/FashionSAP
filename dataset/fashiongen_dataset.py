@@ -21,8 +21,6 @@ class fashiongen_dataset_pretrain(Dataset):
         self.catemap_filename = os.path.join(self.data_root,args.catemap_filename)
         self.product_list_filename = os.path.join(self.data_root, self.split, args.product_list_filename)
         self.__inner_attribute_names = [  
-            # 'input_concat_description',
-            # 'input_description',
             'input_category',
             'input_composition',
             'input_gender',
@@ -44,7 +42,6 @@ class fashiongen_dataset_pretrain(Dataset):
         self.tokenizer = tokenizer
         self.vocabs = list(self.tokenizer.vocab.keys())
 
-    # def __cate_to_
 
     def __load_datafile(self):
         datafilename = os.path.join(self.data_root, self.split, 'info_data.json')
@@ -278,8 +275,7 @@ class fashiongen_dataset_retrieval(Dataset):
         img_indexes = []
         pid_to_index = {pid:i for i,pid in enumerate(self.product_list)}
         txt_indexs = []
-        a = []
-        # a.remove
+
         for pid_ind in pid_indexes:
             pid = self.product_list[pid_ind]
             img_index = random.choice(self.product_indexmap[pid])

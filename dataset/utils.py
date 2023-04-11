@@ -94,7 +94,7 @@ def process_attribute(attribute_dict, tokenizer) -> list:
 
     for name in attribute_names[1:]:
         outstrs.append((name.replace('input_',''), attribute_dict[name]))
-    # print(outstrs)
+
     ##### process
     for i, v in enumerate(outstrs):
         if v[0] == 'subcategory':
@@ -111,7 +111,7 @@ def process_attribute(attribute_dict, tokenizer) -> list:
     ##### prompt name or attribute
     mask_token = []
     prompt_val_flag = 0 if random.random() < 0.5 else 1
-    # if prompt_val_flag == 0:
+
     mask_token = out_tokens[4+prompt_val_flag]    # 4 because skip first and second (name-val) tuple
     out_tokens[4+prompt_val_flag] = ['[MASK]'] * len(out_tokens[4+prompt_val_flag])
                
