@@ -12,13 +12,9 @@ import torch.nn as nn
 import torch.backends.cudnn as cudnn
 import torch.distributed as dist
 
-
-
-
 from models.model_fashion_pretrain import FashionSAP
 from models.vit import interpolate_pos_embed
 from transformers.models.bert.tokenization_bert import BertTokenizer
-
 
 import utils
 from dataset import create_dataset, create_sampler, create_loader
