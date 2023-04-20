@@ -207,15 +207,15 @@ def main(args, config):
     if args.pre_point:
         checkpoint = torch.load(args.pre_point, map_location='cpu')    
         state_dict = checkpoint['model']
-        new_leng = config['queue_size']
-        pre_leng = state_dict['image_queue'].size()[1]
-        if new_leng < pre_leng:
-            state_dict['image_queue'] = state_dict['image_queue'][:,:new_leng]
-            state_dict['fusion_queue'] = state_dict['fusion_queue'][:,:new_leng] 
-        elif new_leng > pre_leng:
-            state_dict['image_queue'] = torch.cat([state_dict['image_queue'],state_dict['image_queue'][:,:new_leng-pre_leng]], dim=1)
-            state_dict['fusion_queue'] = torch.cat([state_dict['fusion_queue'],state_dict['fusion_queue'][:,:new_leng-pre_leng]], dim=1)   
-        state_dict.pop('queue_ptr')
+        # new_leng = config['queue_size']
+        # pre_leng = state_dict['image_queue'].size()[1]
+        # if new_leng < pre_leng:
+        #     state_dict['image_queue'] = state_dict['image_queue'][:,:new_leng]
+        #     state_dict['fusion_queue'] = state_dict['fusion_queue'][:,:new_leng] 
+        # elif new_leng > pre_leng:
+        #     state_dict['image_queue'] = torch.cat([state_dict['image_queue'],state_dict['image_queue'][:,:new_leng-pre_leng]], dim=1)
+        #     state_dict['fusion_queue'] = torch.cat([state_dict['fusion_queue'],state_dict['fusion_queue'][:,:new_leng-pre_leng]], dim=1)   
+        # state_dict.pop('queue_ptr')
         
         # reshape positional embedding to accomodate for image resolution change
         pos_embed_reshaped = interpolate_pos_embed(state_dict['visual_encoder.pos_embed'],model.visual_encoder)         

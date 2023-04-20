@@ -168,9 +168,9 @@ def main(args, config):
     if args.pre_point:
         checkpoint = torch.load(args.pre_point, map_location='cpu')    
         state_dict = checkpoint['model']
-        if 'queue_size' in config and config['queue_size'] < 65535:
-            state_dict['image_queue'] = state_dict['image_queue'][:,:config['queue_size']]
-            state_dict['text_queue'] = state_dict['text_queue'][:,:config['queue_size']]
+        # if 'queue_size' in config and config['queue_size'] < 65535:
+        #     state_dict['image_queue'] = state_dict['image_queue'][:,:config['queue_size']]
+        #     state_dict['text_queue'] = state_dict['text_queue'][:,:config['queue_size']]
         
         # reshape positional embedding to accomodate for image resolution change
         pos_embed_reshaped = interpolate_pos_embed(state_dict['visual_encoder.pos_embed'],model.visual_encoder)         
@@ -207,7 +207,6 @@ def main(args, config):
     optimizer = create_optimizer(arg_opt, model)
     arg_sche = utils.AttrDict(config['schedular'])
     lr_scheduler, _ = create_scheduler(arg_sche, optimizer)
-    # lr_scheduler.load_state_dict()
     
     max_epoch = config['schedular']['epochs']
     warmup_steps = config['schedular']['warmup_epochs']

@@ -1,6 +1,6 @@
 # Copyright (c) 2021, Salesforce.com, Inc.
 '''
-code from ALBEF project
+code from ALBEF project https://github.com/salesforce/ALBEF
 '''
 import cv2
 import numpy as np
