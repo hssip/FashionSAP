@@ -87,11 +87,6 @@ class FashionSAP(nn.Module):
         text_embeds = text_output.last_hidden_state
         text_feat = F.normalize(self.combine_text_proj(self.text_proj(text_embeds[:,0,:])), dim=-1)
 
-        
-        # idx = idx.view(-1,1)
-        # idx_all = torch.cat([idx.t(), self.idx_queue.clone().detach()],dim=1)  
-        # pos_idx = torch.eq(idx, idx_all).float()       
-        # sim_targets = pos_idx / pos_idx.sum(1,keepdim=True)
 
         ####cal cantrastive loss
         with torch.no_grad():
@@ -210,7 +205,6 @@ class FashionSAP(nn.Module):
         # gather keys before updating queue
         image_feats = concat_all_gather(image_feat)
         text_feats = concat_all_gather(text_feat)
-        # idxs = concat_all_gather(idx)
 
         batch_size = image_feats.shape[0]
 
@@ -220,7 +214,6 @@ class FashionSAP(nn.Module):
         # replace the keys at ptr (dequeue and enqueue)
         self.image_queue[:, ptr:ptr + batch_size] = image_feats.T
         self.text_queue[:, ptr:ptr + batch_size] = text_feats.T
-        # self.idx_queue[:, ptr:ptr + batch_size] = idxs.T
         ptr = (ptr + batch_size) % self.queue_size  # move pointer
 
         self.queue_ptr[0] = ptr  

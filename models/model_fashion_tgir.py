@@ -95,12 +95,6 @@ class FashionSAP(nn.Module):
         text_output = self.text_encoder(text_input_ids, attention_mask = text_attention_mask,                      
                                         return_dict = True, mode = 'text')            
         text_embeds = text_output.last_hidden_state
-
-        # idx = torch.cat([tar_id, ref_id], dim=0)
-        # idx = idx.view(-1,1)
-        # idx_all = torch.cat([idx.t(), self.idx_queue.clone().detach()],dim=1)  
-        # pos_idx = torch.eq(idx, idx_all).float()       
-        # sim_targets = pos_idx / pos_idx.sum(1,keepdim=True)
         
         fusion_out = self.text_encoder(
             encoder_embeds =text_embeds,
@@ -174,28 +168,7 @@ class FashionSAP(nn.Module):
     def _momentum_update(self):
         for model_pair in self.model_pairs:           
             for param, param_m in zip(model_pair[0].parameters(), model_pair[1].parameters()):
-                param_m.data = param_m.data * self.momentum + param.data * (1. - self.momentum)
-                
-    # @torch.no_grad()
-    # def _dequeue_and_enqueue(self, image_feat, fusion_feat, idx=None):
-    #     # gather keys before updating queue
-    #     image_feats = concat_all_gather(image_feat)
-    #     fusion_feats = concat_all_gather(fusion_feat)
-    #     # idxs = concat_all_gather(idx)
-
-    #     batch_size = image_feats.shape[0]
-
-    #     ptr = int(self.queue_ptr)
-    #     assert self.queue_size % batch_size == 0  # for simplicity
-
-    #     # replace the keys at ptr (dequeue and enqueue)
-    #     self.image_queue[:, ptr:ptr + batch_size] = image_feats.T
-    #     self.fusion_queue[:, ptr:ptr + batch_size] = fusion_feats.T
-    #     # self.idx_queue[:, ptr:ptr + batch_size] = idxs.T
-    #     ptr = (ptr + batch_size) % self.queue_size  # move pointer
-
-    #     self.queue_ptr[0] = ptr  
-                
+                param_m.data = param_m.data * self.momentum + param.data * (1. - self.momentum)          
                 
     @torch.no_grad()
     def _dequeue_and_enqueue_fusion(self, image_feat, fusion_feat):

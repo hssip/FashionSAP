@@ -6,7 +6,6 @@ batch_size_train: 16
 batch_size_test: 256
 
 queue_size: 65536
-# queue_size: 8192
 momentum: 0.995
 vision_width: 768
 embed_dim: 256
@@ -14,7 +13,6 @@ temp: 0.07
 k_test: 256
 
 alpha: 0.4
-distill: True
 warm_up: True
 
 optimizer: {opt: adamW, lr: 2e-5, weight_decay: 0.2} # 0.02
