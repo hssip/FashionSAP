@@ -53,7 +53,7 @@ def extract_productid(data_root, split='train'):
 
 if __name__ == '__main__':
     data_root = ''  #fill the new dir path there
-    split = 'train' # or 'validation'
+    split = 'train' # or change to 'validation'
     # extract_productid(data_root, split)
     # extract_fashiongen_json(data_root, split)
     pass
