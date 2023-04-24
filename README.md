@@ -1,6 +1,8 @@
 ## FashionSAP: Symbols and Attributes Prompt for Fine-grained Fashion Vision-Language Pre-training
 
-This is the source code of PyTorch implementation of the FashionSAP:. 
+This paper is accepted by the IEEE/CVF Conference on Computer Vision and Pattern Recognition 2023 (CVPR2023) [paper](https://arxiv.org/abs/2304.05051)
+
+This is the source code of PyTorch implementation of the FashionSAP. 
 
 We will introduce more about our project ...
 
@@ -39,5 +41,7 @@ If you find this code useful for your research, please cite:
       booktitle={CVPR}
 }
 ```
+
+Some utils codes are referenced from project [ALBEF](https://github.com/salesforce/ALBEF)
 
 
