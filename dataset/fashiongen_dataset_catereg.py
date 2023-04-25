@@ -51,8 +51,7 @@ class fashiongen_dataset_catereg(Dataset):
 
         #list of dict the dict is text info of instance
         #h5py data of raw data
-        # if self.sub_dataset:
-        #     self.info_data = self.info_data[:500] 
+
         self.tokenizer = tokenizer
         self.label_map = {k:i for i,k in enumerate(self.cate_list)}
 

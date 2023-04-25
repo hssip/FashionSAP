@@ -235,7 +235,7 @@ if __name__ == '__main__':
     # parser.add_argument('--sub_dataset', default=False, type=bool)
 
     parser.add_argument('--max_word_num', default=180, type=int)
-    parser.add_argument('--data_root', default='/mnt/MDisk/hyp/data/fashiongen', type=str)
+    parser.add_argument('--data_root', default='', type=str)
     parser.add_argument('--catemap_filename', default='categorys_to_sign.txt', type=str)
     parser.add_argument('--product_list_filename', default='productid_list.json', type=str)
     parser.add_argument('--replace_kind_num', default=2, type=int)

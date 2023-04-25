@@ -92,7 +92,6 @@ class FashionSAP(nn.Module):
         with torch.no_grad():
             self._momentum_update()
             image_embeds_m = self.visual_encoder_m(image) 
-            # image_feat_m = F.normalize(self.vision_proj_m(image_embeds_m[:,0,:]), dim=-1)
             image_feat_m = F.normalize(self.combine_vision_proj_m(self.vision_proj_m(image_embeds_m[:,0,:])), dim=-1)
             image_feat_all = torch.cat([image_feat_m.t(),self.image_queue.clone().detach()],dim=1)                                         
    

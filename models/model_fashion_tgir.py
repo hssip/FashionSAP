@@ -31,7 +31,6 @@ class FashionSAP(nn.Module):
                  ):
         super().__init__()
         
-        # self.tokenizer = tokenizer 
         self.config = config
         self.args = args
         embed_dim = config['embed_dim']        
@@ -175,22 +174,18 @@ class FashionSAP(nn.Module):
         # gather keys before updating queue
         image_feats = concat_all_gather(image_feat)
         fusion_feats = concat_all_gather(fusion_feat)
-        # idxs = concat_all_gather(idx)
 
         img_batch_size = image_feats.shape[0]
         fusion_batch_size = int(img_batch_size/2)
-        # print(batch_size)
 
         img_ptr = int(self.img_queue_ptr)
         fusion_ptr = int(self.fusion_queue_ptr)
-        # print(ptr)
         assert self.queue_size % img_batch_size == 0  # for simplicity
         assert self.queue_size % int(img_batch_size/2) == 0  # for simplicity
 
         # replace the keys at ptr (dequeue and enqueue)
         self.image_queue[:, img_ptr:img_ptr + img_batch_size] = image_feats.T
         self.fusion_queue[:, fusion_ptr:fusion_ptr + fusion_batch_size] = fusion_feats.T
-        # self.idx_queue[:, img_ptr:img_ptr + img_batch_size] = idxs.T
         img_ptr = (img_ptr + img_batch_size) % self.queue_size  # move pointer
         fusion_ptr = (fusion_ptr + fusion_batch_size) % self.queue_size  # move pointer
 

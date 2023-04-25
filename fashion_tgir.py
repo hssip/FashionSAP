@@ -359,7 +359,7 @@ if __name__ == '__main__':
     parser.add_argument('--distributed', default=True, type=bool)
 
     parser.add_argument('--max_word_num', default=79, type=int)
-    parser.add_argument('--data_root', default='/mnt/MDisk/hyp/data/fashioniq', type=str)
+    parser.add_argument('--data_root', default='', type=str)
     parser.add_argument('--train_class', default='all', type=str)
 
     args = parser.parse_args()
