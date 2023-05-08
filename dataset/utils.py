@@ -89,7 +89,10 @@ def process_attribute(attribute_dict, tokenizer) -> list:
     val_tokens = val.split(' ')
     val = ''
     for vt in val_tokens:
-        val += search_synonym(vt) + ' '
+        if random.random() > 0.15:
+            val += vt + ' '
+        else:
+            val += search_synonym(vt) + ' '
     outstrs.append((name.replace('input_',''),val))
 
     for name in attribute_names[1:]:
@@ -139,13 +142,10 @@ def search_synonym(word, label=None):
     '''
     assert label in ('n','a','v',None)
     syns = wn.synsets(word)
-    syns_set = set()
+    syns_set = []
     for syn in syns:
-        if label is not None and \
-            syn.name().split('.')[1] != label:
-            continue
-        syns_set | set(syn.lemma_names())
-    syns_set.discard(word)
+        syns_set.extend(syn.lemma_names())
+    syns_set = set(syns_set)
     if syns_set:
         word = random.choice(list(syns_set))
 

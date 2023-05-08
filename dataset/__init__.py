@@ -34,15 +34,15 @@ def create_dataset(dataset, config, args, tokenizer):
         test_dataset = fashiongen_dataset_retrieval(args, transform=test_transform, tokenizer=tokenizer, split='validation')
         return train_dataset, test_dataset
     elif dataset == 'retrieval':
-        train_dataset = fashiongen_dataset_retrieval(args, transform=test_transform, tokenizer=tokenizer, split='train')
+        train_dataset = fashiongen_dataset_retrieval(args, transform=train_transform, tokenizer=tokenizer, split='train')
         test_dataset = fashiongen_dataset_retrieval(args, transform=test_transform, tokenizer=tokenizer, split='validation')
         return train_dataset, test_dataset
     elif dataset == 'catereg':
-        train_dataset = fashiongen_dataset_catereg(args, transform=test_transform, tokenizer=tokenizer, split='train')
+        train_dataset = fashiongen_dataset_catereg(args, transform=train_transform, tokenizer=tokenizer, split='train')
         test_dataset = fashiongen_dataset_catereg(args, transform=test_transform, tokenizer=tokenizer, split='validation')
         return train_dataset, test_dataset
     elif dataset == 'tgir':
-        train_dataset = fashiongen_dataset_tgir_train(args, transform=test_transform, tokenizer=tokenizer, split='train')
+        train_dataset = fashiongen_dataset_tgir_train(args, transform=train_transform, tokenizer=tokenizer, split='train')
         dress_test_dataset = fashiongen_dataset_tgir_val(args, transform=test_transform, tokenizer=tokenizer, split='val', val_class='dress')
         toptee_test_dataset = fashiongen_dataset_tgir_val(args, transform=test_transform, tokenizer=tokenizer, split='val', val_class='toptee')
         shirt_test_dataset = fashiongen_dataset_tgir_val(args, transform=test_transform, tokenizer=tokenizer, split='val', val_class='shirt')

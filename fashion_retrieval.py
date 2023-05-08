@@ -94,9 +94,6 @@ def evaluation(model, data_loader, tokenizer, device, config, args):
         text_embed = text_embed.last_hidden_state
         text_feat = model.combine_text_proj(model.text_proj(text_embed[:,0,:]))
         text_feats.append(text_feat)
-        if args.evaluate and args.evaluate_match:
-            text_embeds.append(text_embed)
-            text_atts.append(text_input.attention_mask)
 
     print('computing imgs feature')
 
@@ -105,8 +102,6 @@ def evaluation(model, data_loader, tokenizer, device, config, args):
         img_embed = model.visual_encoder(img)
         img_feat = model.combine_vision_proj(model.vision_proj(img_embed[:,0,:]))
         img_feats.append(img_feat)
-        if args.evaluate and args.evaluate_match:
-            img_embeds.append(img_embed)
 
     
     text_feats = torch.cat(text_feats, dim=0)
@@ -187,8 +182,6 @@ def itm_eval(scores_i2t, scores_t2i, img2txt=None, txt2img=None, tiny_i2t=None, 
     ir10_tiny = 0
     if tiny_t2i is not None:
         txt_indexes, img_indexes= tiny_t2i
-        print(img_indexes.shape)
-        print(txt_indexes.shape)
         tiny_score_t2i = np.zeros(img_indexes.shape)
         tiny_score = scores_t2i[txt_indexes]
         for i, t_socre in enumerate(tiny_score):

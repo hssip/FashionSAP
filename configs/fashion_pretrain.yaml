@@ -1,4 +1,4 @@
-bert_config: './configs/config_bert.json'
+bert_config: './fashion_annotation/config_bert.json'
 tokenizer_config: './fashion_annotation'
 
 image_res: 256
