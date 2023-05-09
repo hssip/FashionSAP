@@ -88,14 +88,15 @@ class FashionSAP(nn.Module):
         # create the queue for better compative
         self.register_buffer("image_queue", torch.randn(embed_dim, self.queue_size))
         self.register_buffer("text_queue", torch.randn(embed_dim, self.queue_size))
-        self.register_buffer("queue_ptr", torch.zeros(1, dtype=torch.long))  
+        self.register_buffer("queue_ptr", torch.zeros(1, dtype=torch.long))
+        self.register_buffer("idx_queue", torch.full((1,self.queue_size),-100))  
 
 
         self.image_queue = F.normalize(self.image_queue, dim=0)
         self.text_queue = F.normalize(self.text_queue, dim=0)
         
 
-    def forward(self, image, text_input_ids, text_attention_mask, alpha, mask_labels=None, replace_labels=None):
+    def forward(self, image, text_input_ids, text_attention_mask, alpha, idx, mask_labels=None, replace_labels=None):
         with torch.no_grad():
             self.temp.clamp_(0.001, 0.5)
         
@@ -110,6 +111,11 @@ class FashionSAP(nn.Module):
 
         text_feat = F.normalize(self.combine_text_proj(self.text_proj(text_embeds[:,0,:])), dim=-1)
         sign_feat = F.normalize(self.combine_text_proj(self.text_proj(text_embeds[:,1,:])), dim=-1)
+        
+        idx = idx.view(-1,1)
+        idx_all = torch.cat([idx.t(), self.idx_queue.clone().detach()],dim=1)  
+        pos_idx = torch.eq(idx, idx_all).float()       
+        sim_targets = pos_idx / pos_idx.sum(1,keepdim=True)
 
         ####cal cantrastive loss
         with torch.no_grad():
@@ -125,8 +131,8 @@ class FashionSAP(nn.Module):
             
             sim_i2t_m = image_feat_m @ text_feat_all / self.temp 
             sim_t2i_m = text_feat_m @ image_feat_all / self.temp   
-            sim_targets = torch.zeros(sim_i2t_m.size()).to(image.device)
-            sim_targets.fill_diagonal_(1)
+            # sim_targets = torch.zeros(sim_i2t_m.size()).to(image.device)
+            # sim_targets.fill_diagonal_(1)
 
 
             sim_i2t_targets = alpha * F.softmax(sim_i2t_m, dim=1) + (1 - alpha) * sim_targets
@@ -139,7 +145,7 @@ class FashionSAP(nn.Module):
         loss_t2i = -torch.sum(F.log_softmax(sim_t2i, dim=1)*sim_t2i_targets,dim=1).mean()
 
         loss_ita = (loss_i2t+loss_t2i)/2
-        self._dequeue_and_enqueue(image_feat, text_feat, idx=None)
+        self._dequeue_and_enqueue(image_feat_m, text_feat_m, idx=idx)
 
         #######cal token sim loss
         symbol_feature = F.normalize(sign_feat, dim=-1)
@@ -240,6 +246,7 @@ class FashionSAP(nn.Module):
         # gather keys before updating queue
         image_feats = concat_all_gather(image_feat)
         text_feats = concat_all_gather(text_feat)
+        idxs = concat_all_gather(idx)
 
         batch_size = image_feats.shape[0]
         ptr = int(self.queue_ptr)
@@ -247,6 +254,7 @@ class FashionSAP(nn.Module):
         # replace the keys at ptr (dequeue and enqueue)
         self.image_queue[:, ptr:ptr + batch_size] = image_feats.T
         self.text_queue[:, ptr:ptr + batch_size] = text_feats.T
+        self.idx_queue[:, ptr:ptr + batch_size] = idxs.T
         ptr = (ptr + batch_size) % self.queue_size  # move pointer
         self.queue_ptr[0] = ptr  
         

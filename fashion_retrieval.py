@@ -143,8 +143,6 @@ def itm_eval(scores_i2t, scores_t2i, img2txt=None, txt2img=None, tiny_i2t=None, 
     tr10_tiny = 0
     if tiny_i2t is not None:
         img_indexes, txt_indexes = tiny_i2t
-        # print(img_indexes.shape)
-        # print(txt_indexes.shape)
         tiny_score_i2t = np.zeros(txt_indexes.shape)
         tiny_score = scores_i2t[img_indexes]
         for i, t_socre in enumerate(tiny_score):

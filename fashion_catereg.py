@@ -79,7 +79,6 @@ def evaluation(model, data_loader, tokenizer, device, config, args):
     for i, batch in enumerate(metric_logger.log_every(data_loader, 50, header)):
         batch = [i.to(device) for i in batch]
         img, input_ids, attention_mask, outpos, label = batch
-        #image, text_input_ids, text_attention_mask, outpos
         cate_logit = model(img, input_ids, attention_mask, outpos)
         label = label.squeeze()
         logits.append(cate_logit)

@@ -47,14 +47,11 @@ def train(model, data_loader, optimizer, epoch, warmup_steps, device, scheduler,
             alpha = config['alpha']
         else:
             alpha = config['alpha']*min(1,i/len(data_loader))
-
-        # loss_ita, loss_itm = model(image, text_input,alpha=alpha, idx=idx)        
-        idx = None          
-        loss_ita, loss_itm, symbol_simloss, mask_loss, replace_loss = model(image, text_input_ids, text_attention_mask,alpha=alpha, 
+        
+        loss_ita, loss_itm, symbol_simloss, mask_loss, replace_loss = model(image, text_input_ids, text_attention_mask,alpha=alpha, idx=idx,
                                 mask_labels=mask_labels, replace_labels=replace_labels)
                           
-        loss = loss_ita + loss_itm + 0. * symbol_simloss + mask_loss + 0. * replace_loss
-        # loss = loss_itm + symbol_simloss + mask_loss + replace_loss
+        loss = loss_ita + loss_itm + symbol_simloss + mask_loss + replace_loss
         
         optimizer.zero_grad()
         loss.backward()
@@ -128,9 +125,6 @@ def main(args, config):
     if args.pre_point:
         checkpoint = torch.load(args.pre_point, map_location='cpu')    
         state_dict = checkpoint['model']
-        # if config['queue_size'] < 65536:
-        #     state_dict['image_queue'] = state_dict['image_queue'][:,:config['queue_size']]
-        #     state_dict['text_queue'] = state_dict['text_queue'][:,:config['queue_size']]
         
         # reshape positional embedding to accomodate for image resolution change
         pos_embed_reshaped = interpolate_pos_embed(state_dict['visual_encoder.pos_embed'],model.visual_encoder)         
@@ -216,7 +210,6 @@ def main(args, config):
 
             
 if __name__ == '__main__':
-    # print('without loss sis')
     parser = argparse.ArgumentParser()     
     parser.add_argument('--config', default='./configs/fashion_pretrain.yaml')
     parser.add_argument('--output_dir', default='')
@@ -227,7 +220,6 @@ if __name__ == '__main__':
     
     parser.add_argument('--evaluate', action='store_true')
     parser.add_argument('--device', default='cuda')
-    # parser.add_argument('--device', default='cpu')
     parser.add_argument('--seed', default=66, type=int)
     parser.add_argument('--world_size', default=1, type=int, help='number of distributed processes')    
     parser.add_argument('--dist_url', default='env://', help='url used to set up distributed training')
