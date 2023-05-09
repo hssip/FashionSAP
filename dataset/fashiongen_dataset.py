@@ -16,7 +16,6 @@ class fashiongen_dataset_pretrain(Dataset):
         self.data_root = args.data_root
         self.split = 'validation' if split in ['val', 'test'] else split
         self.max_words = args.max_word_num
-        # self.sub_dataset = args.sub_dataset
 
         self.catemap_filename = os.path.join(self.data_root,args.catemap_filename)
         self.product_list_filename = os.path.join(self.data_root, self.split, args.product_list_filename)
@@ -36,7 +35,7 @@ class fashiongen_dataset_pretrain(Dataset):
         self.product_list, self.product_indexmap = self.__load_product_info()
         #list of int, the int is productid
         #dict of product index, key is productid, value is a list of product-info index
-
+        self.cap_ids = self.__load_capids()
         self.catemap = self.__load_cate_map()   
         #dict map category val to sign token
         self.tokenizer = tokenizer
@@ -111,8 +110,6 @@ class fashiongen_dataset_pretrain(Dataset):
 
         return input_ids, attention_mask, mask_labels, replace_labels
 
-
-
     def __load_product_info(self):
         indata = json.load(open(self.product_list_filename, mode='r', encoding='utf8'))
         product_idlist = []
@@ -123,7 +120,16 @@ class fashiongen_dataset_pretrain(Dataset):
             product_indexmap[product_id] = p[1]
         return product_idlist, product_indexmap
 
-        
+    def __load_capids(self):
+        cap_index = {}
+        count = 0
+        for item in self.info_data:
+            product_id = item['input_productID']
+            if product_id not in cap_index.keys():
+                cap_index[product_id] = count
+                count += 1
+        return cap_index
+    
     def __load_cate_map(self):
         cate_map = {}
         with open(self.catemap_filename, mode='r', encoding='utf8') as mapfile:
@@ -134,20 +140,25 @@ class fashiongen_dataset_pretrain(Dataset):
         return cate_map
         
     def __len__(self):
-        return len(self.product_list)
+        # return len(self.product_list)
+        return len(self.info_data)
+    
+    # another data feeding way
+    # def __getitem__(self, index):  
+    #     product_id = self.product_list[index]
+    #     cap_index = random.choice(self.product_indexmap[product_id])
+    #     ####make sure align
+    #     assert product_id == self.raw_data['input_productID'][cap_index][0]
+    #     input_ids, attention_mask, mask_labels, replace_labels = self.__get_text(cap_index)
+    #     img = self.__get_image(cap_index)
+    #     return img, input_ids, attention_mask, mask_labels, replace_labels, cap_index
     
     def __getitem__(self, index):  
-
-        product_id = self.product_list[index]
-        
-        cap_index = random.choice(self.product_indexmap[product_id])
-        ####make sure align
-        assert product_id == self.raw_data['input_productID'][cap_index][0]
-        input_ids, attention_mask, mask_labels, replace_labels = self.__get_text(cap_index)
-        img = self.__get_image(cap_index)
-
-
-        return img, input_ids, attention_mask, mask_labels, replace_labels, cap_index
+        product_id = self.info_data[index]['input_productID']
+        input_ids, attention_mask, mask_labels, replace_labels = self.__get_text(index)
+        img = self.__get_image(index)
+        cap_id = self.cap_ids[product_id]
+        return img, input_ids, attention_mask, mask_labels, replace_labels, cap_id
 
 class fashiongen_dataset_retrieval(Dataset):
     def __init__(self, args, transform, tokenizer, split):   

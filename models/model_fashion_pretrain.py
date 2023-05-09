@@ -130,7 +130,8 @@ class FashionSAP(nn.Module):
             text_feat_all = torch.cat([text_feat_m.t(),self.text_queue.clone().detach()],dim=1)
             
             sim_i2t_m = image_feat_m @ text_feat_all / self.temp 
-            sim_t2i_m = text_feat_m @ image_feat_all / self.temp   
+            sim_t2i_m = text_feat_m @ image_feat_all / self.temp
+            # another train way
             # sim_targets = torch.zeros(sim_i2t_m.size()).to(image.device)
             # sim_targets.fill_diagonal_(1)
 
