@@ -163,24 +163,12 @@ def main(args, config):
     print("Creating model")
     model = FashionSAP(config=config, args=args)
 
-
     if args.pre_point:
         checkpoint = torch.load(args.pre_point, map_location='cpu')    
-        state_dict = checkpoint['model']
-        # if 'queue_size' in config and config['queue_size'] < 65535:
-        #     state_dict['image_queue'] = state_dict['image_queue'][:,:config['queue_size']]
-        #     state_dict['text_queue'] = state_dict['text_queue'][:,:config['queue_size']]
-        
+        state_dict = checkpoint['model'] 
         # reshape positional embedding to accomodate for image resolution change
         pos_embed_reshaped = interpolate_pos_embed(state_dict['visual_encoder.pos_embed'],model.visual_encoder)         
-        state_dict['visual_encoder.pos_embed'] = pos_embed_reshaped
-
-        
-        for key in list(state_dict.keys()):
-            if 'bert' in key:
-                encoder_key = key.replace('bert.','')         
-                state_dict[encoder_key] = state_dict[key] 
-                del state_dict[key]                
+        state_dict['visual_encoder.pos_embed'] = pos_embed_reshaped               
         msg = model.load_state_dict(state_dict,strict=False)  
         
         print('load checkpoint from %s'%args.pre_point)
@@ -289,7 +277,7 @@ if __name__ == '__main__':
 
     parser.add_argument('--max_word_num', default=75, type=int)
     parser.add_argument('--data_root', default='', type=str)
-    parser.add_argument('--cate_kind', default='cate', type=str)
+    parser.add_argument('--cate_kind', default='cate', type=str,choices=['cate','subcate'] )
     parser.add_argument('--prompt', default=False, type=bool)
     
     args = parser.parse_args()

@@ -85,13 +85,14 @@ class fashiongen_dataset_catereg(Dataset):
             description = 'the image description is ' + item_info['input_description']
             description_tokens = ['[CLS]'] + self.tokenizer.tokenize(pre_caption(description))
             tokens_length = len(description_tokens)
-            if (tokens_length + 5) > self.max_words:
-                description_tokens = description_tokens[:(self.max_words - 5)]
+            cate_length = 1 if self.cate == 'category' else 2
+            cate_length += 4    #adapt for different category
+            if (tokens_length + cate_length) > self.max_words:
+                description_tokens = description_tokens[:(self.max_words - cate_length)]
             description_tokens.extend(self.tokenizer.tokenize('the image ' + self.cate + ' is ') + ['[MASK]'])
             tokens_length = len(description_tokens)
             assert tokens_length < self.max_words or tokens_length == self.max_words
-            outpos = [len(tokens_length) - 1]
-
+            outpos = [description_tokens.index('[MASK]')]
 
         pad_length = self.max_words - tokens_length
         input_ids = self.tokenizer.convert_tokens_to_ids(description_tokens)
@@ -103,20 +104,18 @@ class fashiongen_dataset_catereg(Dataset):
         attention_mask = torch.tensor(attention_mask, dtype=torch.long)
         outpos = torch.tensor(outpos, dtype=torch.long)
         return input_ids, attention_mask, outpos
-        
+    
+    def __get_label(self, index):
+        cate_label = 'input_category' if self.cate =='category' else 'input_subcategory'
+        cate = self.info_data[index][cate_label].strip().replace('\t',' ').lower()
+        label = torch.tensor([self.label_map[cate]], dtype=torch.long)
+        return label
+    
     def __len__(self):
-
         return len(self.info_data)
     
     def __getitem__(self, index):
-        cap_index = index
-        input_ids, attention_mask, outpos = self.__get_text(cap_index)
-        img = self.__get_image(cap_index)
-        label = self.__get_label(cap_index)
-        return img, input_ids, attention_mask, outpos, label
-    
-    def __get_label(self, index):
-        cate_label = 'input_category' if self.cate =='cate' else 'input_subcategory'
-        cate = self.info_data[index][cate_label].strip().replace('\t',' ').lower()
-        label = torch.tensor([self.label_map.get(cate, 0)], dtype=torch.long)
-        return label
+        input_ids, attention_mask, outpos = self.__get_text(index)
+        img = self.__get_image(index)
+        label = self.__get_label(index)
+        return img, input_ids, attention_mask, outpos, label    
