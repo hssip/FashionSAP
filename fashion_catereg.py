@@ -166,7 +166,7 @@ def main(args, config):
     if args.pre_point:
         checkpoint = torch.load(args.pre_point, map_location='cpu')    
         state_dict = checkpoint['model'] 
-        # reshape positional embedding to accomodate for image resolution change
+        # reshape positional embedding to accomodate for image resolution change if needed
         pos_embed_reshaped = interpolate_pos_embed(state_dict['visual_encoder.pos_embed'],model.visual_encoder)         
         state_dict['visual_encoder.pos_embed'] = pos_embed_reshaped               
         msg = model.load_state_dict(state_dict,strict=False)  
