@@ -109,10 +109,10 @@ class fashiongen_dataset_catereg(Dataset):
         cate_label = 'input_category' if self.cate =='category' else 'input_subcategory'
         cate = self.info_data[index][cate_label].strip().replace('\t',' ').lower()
         
-        ## standard method for getting label 
+        ## standard method for getting label idx
         # label = torch.tensor([self.label_map[cate]], dtype=torch.long)
         
-        ## get() method for OOV subcategory in validation dataset
+        ## get() method for OOV subcategory label in validation dataset
         label = torch.tensor([self.label_map.get(cate, 0)], dtype=torch.long)
         return label
     
