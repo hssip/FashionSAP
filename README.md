@@ -28,7 +28,7 @@ We will introduce more about our project ...
     * `catereg`: fashion domain category recognition and subcategory recognition
     * `tgir`:  text guided image retrieval or text modified image retrieval
 
-1. command `bash run_pretrain.sh` to run pretrain stage
+1. command `bash run_pretrain.sh` to run pretrain stage, we also public our pre-trained model weight file in [Google Driver](https://drive.google.com/file/d/1yKm5b1L5rCe6HT7FkQ1Ta5D2HNstc5nv/view?usp=sharing)
 2. command `bash run_{downstream_name}.sh` to train and evaluate different downstream tasks
 
 ### Citations
