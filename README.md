@@ -24,12 +24,15 @@ We will introduce more about our project ...
 ### Run
 1. we define 3 kinds downstream names as `downstream_name`
 
-    * `retrieval`: includes 2 downstream tasks: text-to-image retrieval downstream and image-to-text retrieval 
-    * `catereg`: fashion domain category recognition and subcategory recognition
-    * `tgir`:  text guided image retrieval or text modified image retrieval
+    * `retrieval`: includes 2 downstream tasks: text-to-image retrieval downstream and image-to-text retrieval.
+    * `catereg`: fashion domain category recognition and subcategory recognition.
+    * `tgir`:  text guided image retrieval or text modified image retrieval.
 
-1. command `bash run_pretrain.sh` to run pretrain stage, we also public our pre-trained model weight file in [Google Driver](https://drive.google.com/file/d/1yKm5b1L5rCe6HT7FkQ1Ta5D2HNstc5nv/view?usp=sharing)
-2. command `bash run_{downstream_name}.sh` to train and evaluate different downstream tasks
+1. command `bash run_pretrain.sh` to run pretrain stage.
+2. command `bash run_{downstream_name}.sh` to train and evaluate different downstream tasks.
+
+### Models
+1. Our pre-trained model can be downloaded from [Google Driver](https://drive.google.com/file/d/1yKm5b1L5rCe6HT7FkQ1Ta5D2HNstc5nv/view?usp=sharing)
 
 ### Citations
 If you find this code useful for your research, please cite:
