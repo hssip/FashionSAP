@@ -125,7 +125,7 @@ class FashionSAP(nn.Module):
                 return_dict = True,
                 mode = 'fusion',
             )
-            fusion_feat_m = F.normalize(self.combine_text_proj(self.text_proj_m(fusion_output_m.last_hidden_state[:,0,:])), dim=-1)
+            fusion_feat_m = F.normalize(self.combine_text_proj_m(self.text_proj_m(fusion_output_m.last_hidden_state[:,0,:])), dim=-1)
             fusion_feat_all = torch.cat([fusion_feat_m.t(),self.fusion_queue.clone().detach()],dim=1)
                
             sim_i2f_m = tar_image_feat_m @ fusion_feat_all / self.temp 

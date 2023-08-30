@@ -149,7 +149,8 @@ class FashionSAP(nn.Module):
         self._dequeue_and_enqueue(image_feat_m, text_feat_m, idx=idx)
 
         #######cal token sim loss
-        symbol_feature = F.normalize(sign_feat, dim=-1)
+        # symbol_feature = F.normalize(sign_feat, dim=-1)
+        symbol_feature = sign_feat
         symbol_simloss = symbol_feature.mul(image_feat).sum(dim=-1).add(1).div(2).mul(-1).add(1).mean()
         
 
